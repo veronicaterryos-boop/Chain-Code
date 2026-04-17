@@ -204,10 +204,10 @@
     const ratio =  Math.max(window.devicePixelRatio || 1, 1);
     canvas.width = canvas.offsetWidth * ratio;
     canvas.height = canvas.offsetHeight * ratio;
-    canvas.getContext("2").scale(ratio, ratio);
+    canvas.getContext("2d").scale(ratio, ratio); // Fixed typo here
 
     const signaturePad = new SignaturePad(canvas, { 
-      penColor: "rgb(0, 0, 200)", // Blue pen style
+      penColor: "rgb(0, 0, 200)", 
       minWidth: 1,
       maxWidth: 2.5
     });
@@ -232,7 +232,6 @@
 
         // 2. Setup custom handwriting font
         pdfDoc.registerFontkit(window.fontkit);
-        // You MUST have this font file in the same folder, or use a reliable URL
         const fontBytes = await fetch('Caveat-Regular.ttf').then(res => res.arrayBuffer());
         const customFont = await pdfDoc.embedFont(fontBytes);
 
@@ -258,22 +257,19 @@
         const drawOptions = { font: customFont, size: 14, color: rgb(0, 0, 0.8) };
 
         // 4. Draw text onto the PDF
-        // IMPORTANT: You will need to change the x and y numbers to match the blank lines on your specific PDF.
-        // The y-axis starts from the BOTTOM of the page going up.
         page.drawText(data.bizName, { x: 150, y: 700, ...drawOptions });
         page.drawText(data.tinNumber, { x: 150, y: 680, ...drawOptions });
         page.drawText(data.bizType, { x: 150, y: 660, ...drawOptions });
         page.drawText(data.ownerName, { x: 150, y: 640, ...drawOptions });
         page.drawText(data.accountName, { x: 150, y: 500, ...drawOptions });
-        // Add more page.drawText() for the rest of your variables here...
 
         // 5. Add the Signature
         if (!signaturePad.isEmpty()) {
           const sigBytes = await fetch(signaturePad.toDataURL()).then(res => res.arrayBuffer());
           const sigImage = await pdfDoc.embedPng(sigBytes);
           page.drawImage(sigImage, {
-            x: 100, // Change to match signature line
-            y: 150, // Change to match signature line
+            x: 100, 
+            y: 150, 
             width: 120,
             height: 60,
           });
@@ -289,7 +285,7 @@
 
       } catch (error) {
         console.error("Error generating PDF: ", error);
-        alert("Make sure Form_NO-1.pdf and Caveat-Regular.ttf are in the same folder as this file!");
+        alert("Error! Make sure you are running a local server and that Form_NO-1.pdf and Caveat-Regular.ttf are in the same folder.");
       }
     });
   </script>
