@@ -1,208 +1,297 @@
 <!DOCTYPE html>
 <html lang="sw">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HaloPesa Mkataba Generator</title>
-    <script src="https://unpkg.com/pdf-lib/dist/pdf-lib.min.js"></script>
-    <script src="https://unpkg.com/@pdf-lib/fontkit/dist/fontkit.umd.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.1.5/dist/signature_pad.umd.min.js"></script>
-    
-    <style>
-        body { font-family: Arial, sans-serif; background: #f4f4f9; padding: 20px; }
-        .container { max-width: 800px; margin: auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
-        h2 { color: #ff6600; }
-        .form-group { margin-bottom: 15px; }
-        label { display: block; font-weight: bold; margin-bottom: 5px; }
-        input[type="text"], input[type="date"] { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
-        .signature-container { border: 1px solid #000; width: 100%; height: 150px; margin-bottom: 10px; background: #fafafa; }
-        canvas { width: 100%; height: 100%; }
-        .buttons { display: flex; gap: 10px; margin-top: 20px; }
-        button { padding: 10px 15px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; color: white; }
-        .btn-submit { background: #28a745; }
-        .btn-clear { background: #dc3545; }
-        .btn-sig-clear { background: #6c757d; font-size: 12px; padding: 5px 10px; }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mkataba wa Lipa Namba</title>
+  
+  <script src="https://unpkg.com/pdf-lib@1.17.1"></script>
+  <script src="https://unpkg.com/@pdf-lib/fontkit@0.0.4"></script>
+  <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.0.0/dist/signature_pad.umd.min.js"></script>
+
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background-color: #f4f7f6;
+      color: #333;
+      margin: 0;
+      padding: 20px;
+      display: flex;
+      justify-content: center;
+    }
+    .form-container {
+      background: #ffffff;
+      max-width: 600px;
+      width: 100%;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    }
+    h2 {
+      margin-top: 0;
+      font-size: 22px;
+      border-bottom: 1px solid #eee;
+      padding-bottom: 10px;
+      margin-bottom: 20px;
+    }
+    .form-group {
+      margin-bottom: 15px;
+    }
+    label {
+      display: block;
+      font-weight: 600;
+      font-size: 14px;
+      margin-bottom: 5px;
+      color: #555;
+    }
+    input[type="text"] {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 14px;
+      box-sizing: border-box;
+    }
+    input[type="text"]:focus {
+      border-color: #0066cc;
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(0, 102, 204, 0.1);
+    }
+    .signature-wrapper {
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      overflow: hidden;
+      margin-bottom: 10px;
+      background: #fafafa;
+    }
+    canvas {
+      width: 100%;
+      height: 150px;
+      display: block;
+    }
+    .button-group {
+      display: flex;
+      gap: 10px;
+      margin-top: 20px;
+    }
+    button {
+      padding: 12px 20px;
+      border: none;
+      border-radius: 6px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      flex: 1;
+    }
+    .btn-primary {
+      background-color: #0066cc;
+      color: white;
+    }
+    .btn-primary:hover {
+      background-color: #0052a3;
+    }
+    .btn-secondary {
+      background-color: #e0e0e0;
+      color: #333;
+    }
+    .btn-secondary:hover {
+      background-color: #ccc;
+    }
+    .btn-clear {
+      background-color: transparent;
+      color: #d9534f;
+      border: 1px solid #d9534f;
+      padding: 6px 12px;
+      font-size: 12px;
+      margin-top: 5px;
+      flex: none;
+    }
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 15px;
+    }
+  </style>
 </head>
 <body>
 
-<div class="container">
-    <h2>Fomu ya Usajili - Pay by HaloPesa</h2>
-    <form id="mkatabaForm">
-        
-        <div class="form-group">
-            <label>Merchant Aggregator Name</label>
-            <input type="text" id="aggregatorName" required>
-        </div>
-        <div class="form-group">
-            <label>Till Number</label>
-            <input type="text" id="tillNumber" required>
-        </div>
-        <div class="form-group">
-            <label>Date</label>
-            <input type="text" id="dateInput" placeholder="DD/MM/YYYY" required>
-        </div>
+  <div class="form-container">
+    <h2>📄 Mkataba wa Lipa Namba</h2>
+    <p style="font-size: 14px; color: #666; margin-bottom: 25px;">Ingiza taarifa kwa mikono ili kuunda mkataba wa Lipa Namba.</p>
 
-        <div class="form-group">
-            <label>Business Registration Name</label>
-            <input type="text" id="businessName" required>
-        </div>
-        <div class="form-group">
-            <label>Business Type (Restaurant, Salon, etc.)</label>
-            <input type="text" id="businessType" required>
-        </div>
-        <div class="form-group">
-            <label>TIN Number</label>
-            <input type="text" id="tinNumber" required>
-        </div>
-        <div class="form-group">
-            <label>Owner's Name</label>
-            <input type="text" id="ownerName" required>
-        </div>
-        <div class="form-group">
-            <label>Owner's Phone Number (+255...)</label>
-            <input type="text" id="ownerPhone" required>
-        </div>
-        <div class="form-group">
-            <label>Other Phone Number</label>
-            <input type="text" id="otherPhone">
-        </div>
-        
-        <div class="form-group">
-            <label>Ward</label>
-            <input type="text" id="ward" required>
-        </div>
-        <div class="form-group">
-            <label>District</label>
-            <input type="text" id="district" required>
-        </div>
-        <div class="form-group">
-            <label>Province/Region</label>
-            <input type="text" id="region" required>
-        </div>
+    <div class="form-group">
+      <label>Jina la Biashara (Business Registration Name)</label>
+      <input type="text" id="bizName" placeholder="MFANO: JOMBAY ENTERPRISES">
+    </div>
 
-        <div class="form-group">
-            <label>HaloPesa Account Name</label>
-            <input type="text" id="halopesaAccount" required>
-        </div>
-        <div class="form-group">
-            <label>Phone Number (+255...)</label>
-            <input type="text" id="halopesaPhone" required>
-        </div>
+    <div class="grid-2">
+      <div class="form-group">
+        <label>Namba ya TIN</label>
+        <input type="text" id="tinNumber" placeholder="180-145-245">
+      </div>
+      <div class="form-group">
+        <label>Business Type</label>
+        <input type="text" id="bizType" placeholder="MFANO: Restaurant, Salon">
+      </div>
+    </div>
 
-        <div class="form-group">
-            <label>Sahihi (Signature)</label>
-            <div class="signature-container">
-                <canvas id="signaturePad"></canvas>
-            </div>
-            <button type="button" class="btn-sig-clear" id="clearSignature">Futa Sahihi</button>
-        </div>
+    <div class="form-group">
+      <label>Jina la Mteja (Owner's / Merchant Name)</label>
+      <input type="text" id="ownerName" placeholder="JINA KAMILI LA MTEJA">
+    </div>
 
-        <div class="buttons">
-            <button type="button" class="btn-submit" id="generatePdf">Tengeneza PDF (Mkataba)</button>
-            <button type="button" class="btn-clear" id="resetForm">Ghairi</button>
-        </div>
-    </form>
-</div>
+    <div class="form-group">
+      <label>Halopesa Account Name</label>
+      <input type="text" id="accountName" placeholder="JINA LA AKAUNTI">
+    </div>
 
-<script>
-    // Initialize Signature Pad
-    const canvas = document.getElementById('signaturePad');
-    const signaturePad = new SignaturePad(canvas, { penColor: "blue" });
+    <div class="grid-2">
+      <div class="form-group">
+        <label>Namba ya Simu ya Mteja (Lipa Namba)</label>
+        <input type="text" id="phonePrimary" placeholder="06XXXXXXXX">
+      </div>
+      <div class="form-group">
+        <label>Namba Nyingine ya Simu</label>
+        <input type="text" id="phoneSecondary" placeholder="Namba ya dharura / ziada">
+      </div>
+    </div>
 
-    // Fix canvas rendering size
-    function resizeCanvas() {
-        const ratio =  Math.max(window.devicePixelRatio || 1, 1);
-        canvas.width = canvas.offsetWidth * ratio;
-        canvas.height = canvas.offsetHeight * ratio;
-        canvas.getContext("2d").scale(ratio, ratio);
-        signaturePad.clear();
-    }
-    window.onresize = resizeCanvas;
-    resizeCanvas();
+    <div class="grid-2">
+      <div class="form-group">
+        <label>Ward</label>
+        <input type="text" id="ward" placeholder="MFANO: KIJITONYAMA">
+      </div>
+      <div class="form-group">
+        <label>District</label>
+        <input type="text" id="district" placeholder="MFANO: KINONDONI">
+      </div>
+    </div>
 
-    // Clear buttons
-    document.getElementById('clearSignature').addEventListener('click', () => signaturePad.clear());
-    document.getElementById('resetForm').addEventListener('click', () => {
-        document.getElementById('mkatabaForm').reset();
-        signaturePad.clear();
+    <div class="grid-2">
+      <div class="form-group">
+        <label>Region</label>
+        <input type="text" id="region" placeholder="MFANO: DAR ES SALAAM">
+      </div>
+      <div class="form-group">
+        <label>Aggregator Name</label>
+        <input type="text" id="aggregatorName" placeholder="Jina la Aggregator">
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label>Aggregator Till</label>
+      <input type="text" id="aggregatorTill" placeholder="Namba ya Till">
+    </div>
+
+    <div class="form-group">
+      <label>✍️ Saini ya Mteja</label>
+      <div class="signature-wrapper">
+        <canvas id="signatureCanvas"></canvas>
+      </div>
+      <button class="btn-clear" id="clearSignature">Futa Saini</button>
+    </div>
+
+    <div class="button-group">
+      <button class="btn-primary" id="generatePdf">Tengeneza PDF (Mkataba)</button>
+      <button class="btn-secondary" id="cancel">Ghairi</button>
+    </div>
+  </div>
+
+  <script>
+    // Setup Signature Pad
+    const canvas = document.getElementById('signatureCanvas');
+    // Fix canvas resolution for sharp lines
+    const ratio =  Math.max(window.devicePixelRatio || 1, 1);
+    canvas.width = canvas.offsetWidth * ratio;
+    canvas.height = canvas.offsetHeight * ratio;
+    canvas.getContext("2").scale(ratio, ratio);
+
+    const signaturePad = new SignaturePad(canvas, { 
+      penColor: "rgb(0, 0, 200)", // Blue pen style
+      minWidth: 1,
+      maxWidth: 2.5
     });
 
-    // Generate PDF
+    document.getElementById('clearSignature').addEventListener('click', () => {
+      signaturePad.clear();
+    });
+
+    document.getElementById('cancel').addEventListener('click', () => {
+      document.querySelectorAll('input').forEach(input => input.value = '');
+      signaturePad.clear();
+    });
+
+    // Handle PDF Generation
     document.getElementById('generatePdf').addEventListener('click', async () => {
-        try {
-            // Fetch your blank Form No. 1 PDF directly from your GitHub
-            const url = 'https://veronicaterryos-boop.github.io/Chain-Code/Form_NO-1.pdf'; 
-            const existingPdfBytes = await fetch(url).then(res => res.arrayBuffer());
+      try {
+        const { PDFDocument, rgb } = PDFLib;
 
-            // Use Standard Helvetica instead of a custom font download
-            const { PDFDocument, rgb, StandardFonts } = PDFLib;
-            const pdfDoc = await PDFDocument.load(existingPdfBytes);
-            const customFont = await pdfDoc.embedFont(StandardFonts.Helvetica);
+        // 1. Fetch your blank PDF
+        const pdfBytes = await fetch('Form_NO-1.pdf').then(res => res.arrayBuffer());
+        const pdfDoc = await PDFDocument.load(pdfBytes);
 
-            const pages = pdfDoc.getPages();
-            const firstPage = pages[0];
-            const bluePen = rgb(0, 0, 0.8);
-            const textSize = 14;
+        // 2. Setup custom handwriting font
+        pdfDoc.registerFontkit(window.fontkit);
+        // You MUST have this font file in the same folder, or use a reliable URL
+        const fontBytes = await fetch('Caveat-Regular.ttf').then(res => res.arrayBuffer());
+        const customFont = await pdfDoc.embedFont(fontBytes);
 
-            // Helper function to draw text
-            const drawText = (text, x, y) => {
-                if(text) {
-                    firstPage.drawText(text, { x, y, size: textSize, font: customFont, color: bluePen });
-                }
-            };
+        const pages = pdfDoc.getPages();
+        const page = pages[0];
 
-            // Map inputs to PDF coordinates
-            drawText(document.getElementById('aggregatorName').value, 150, 720); 
-            drawText(document.getElementById('tillNumber').value, 150, 700); 
-            drawText(document.getElementById('dateInput').value, 150, 680); 
-            
-            drawText(document.getElementById('businessName').value, 200, 620); 
-            drawText(document.getElementById('businessType').value, 200, 600); 
-            drawText(document.getElementById('tinNumber').value, 400, 600); 
-            drawText(document.getElementById('ownerName').value, 200, 580); 
-            drawText(document.getElementById('ownerPhone').value, 200, 560); 
-            drawText(document.getElementById('otherPhone').value, 400, 560); 
-            
-            drawText(document.getElementById('ward').value, 150, 500); 
-            drawText(document.getElementById('district').value, 300, 500); 
-            drawText(document.getElementById('region').value, 450, 500); 
+        // 3. Collect Data
+        const data = {
+          bizName: document.getElementById('bizName').value,
+          tinNumber: document.getElementById('tinNumber').value,
+          bizType: document.getElementById('bizType').value,
+          ownerName: document.getElementById('ownerName').value,
+          accountName: document.getElementById('accountName').value,
+          phonePrimary: document.getElementById('phonePrimary').value,
+          phoneSecondary: document.getElementById('phoneSecondary').value,
+          ward: document.getElementById('ward').value,
+          district: document.getElementById('district').value,
+          region: document.getElementById('region').value,
+          aggregatorName: document.getElementById('aggregatorName').value,
+          aggregatorTill: document.getElementById('aggregatorTill').value
+        };
 
-            drawText(document.getElementById('halopesaAccount').value, 250, 420); 
-            drawText(document.getElementById('halopesaPhone').value, 250, 400); 
+        const drawOptions = { font: customFont, size: 14, color: rgb(0, 0, 0.8) };
 
-            drawText(document.getElementById('ownerName').value, 150, 150); 
-            drawText(document.getElementById('dateInput').value, 150, 110); 
+        // 4. Draw text onto the PDF
+        // IMPORTANT: You will need to change the x and y numbers to match the blank lines on your specific PDF.
+        // The y-axis starts from the BOTTOM of the page going up.
+        page.drawText(data.bizName, { x: 150, y: 700, ...drawOptions });
+        page.drawText(data.tinNumber, { x: 150, y: 680, ...drawOptions });
+        page.drawText(data.bizType, { x: 150, y: 660, ...drawOptions });
+        page.drawText(data.ownerName, { x: 150, y: 640, ...drawOptions });
+        page.drawText(data.accountName, { x: 150, y: 500, ...drawOptions });
+        // Add more page.drawText() for the rest of your variables here...
 
-            // Embed Signature
-            if (!signaturePad.isEmpty()) {
-                const sigDataUri = signaturePad.toDataURL('image/png');
-                const sigBytes = await fetch(sigDataUri).then(res => res.arrayBuffer());
-                const sigImage = await pdfDoc.embedPng(sigBytes);
-                
-                // Adjust X, Y, width, and height for the signature
-                firstPage.drawImage(sigImage, {
-                    x: 150,
-                    y: 120,
-                    width: 100,
-                    height: 30,
-                });
-            }
-
-            // Save and Download
-            const pdfBytes = await pdfDoc.save();
-            const blob = new Blob([pdfBytes], { type: "application/pdf" });
-            const link = document.createElement('a');
-            link.href = URL.createObjectURL(blob);
-            link.download = "Mkataba_Uliojazwa.pdf";
-            link.click();
-
-        } catch (error) {
-            console.error("Error generating PDF: ", error);
-            alert("Kuna shida kutengeneza PDF. Check console.");
+        // 5. Add the Signature
+        if (!signaturePad.isEmpty()) {
+          const sigBytes = await fetch(signaturePad.toDataURL()).then(res => res.arrayBuffer());
+          const sigImage = await pdfDoc.embedPng(sigBytes);
+          page.drawImage(sigImage, {
+            x: 100, // Change to match signature line
+            y: 150, // Change to match signature line
+            width: 120,
+            height: 60,
+          });
         }
-    });
-</script>
 
+        // 6. Save and Download
+        const pdfResultBytes = await pdfDoc.save();
+        const blob = new Blob([pdfResultBytes], { type: "application/pdf" });
+        const link = document.createElement('a');
+        link.href = window.URL.createObjectURL(blob);
+        link.download = "Mkataba_Lipa_Namba_Kamilika.pdf";
+        link.click();
+
+      } catch (error) {
+        console.error("Error generating PDF: ", error);
+        alert("Make sure Form_NO-1.pdf and Caveat-Regular.ttf are in the same folder as this file!");
+      }
+    });
+  </script>
 </body>
 </html>
