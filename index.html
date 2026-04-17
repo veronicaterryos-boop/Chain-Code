@@ -131,21 +131,14 @@
     // Generate PDF
     document.getElementById('generatePdf').addEventListener('click', async () => {
         try {
-            // 1. Fetch your blank Form No. 1 PDF. 
-            // YOU MUST CHANGE THIS URL to where your blank PDF is hosted.
+            // Fetch your blank Form No. 1 PDF directly from your GitHub
             const url = 'https://veronicaterryos-boop.github.io/Chain-Code/Form_NO-1.pdf'; 
             const existingPdfBytes = await fetch(url).then(res => res.arrayBuffer());
 
-            // 2. Fetch a handwriting font (Caveat) from Google Fonts
-            const fontUrl = 'https://fonts.gstatic.com/s/caveat/v18/Wnz6HAc5bAfYB2Q7Yj82ciM_lA.woff2';
-            const fontBytes = await fetch(fontUrl).then(res => res.arrayBuffer());
-
-            const { PDFDocument, rgb } = PDFLib;
+            // Use Standard Helvetica instead of a custom font download
+            const { PDFDocument, rgb, StandardFonts } = PDFLib;
             const pdfDoc = await PDFDocument.load(existingPdfBytes);
-            
-            // Register fontkit to allow custom fonts
-            pdfDoc.registerFontkit(window.fontkit);
-            const customFont = await pdfDoc.embedFont(fontBytes);
+            const customFont = await pdfDoc.embedFont(StandardFonts.Helvetica);
 
             const pages = pdfDoc.getPages();
             const firstPage = pages[0];
@@ -159,36 +152,35 @@
                 }
             };
 
-            // 3. Map inputs to PDF coordinates.
-            // But here's the problem: You will need to adjust these X and Y numbers to match your exact PDF layout perfectly.
-            drawText(document.getElementById('aggregatorName').value, 150, 720); // Name [cite: 59]
-            drawText(document.getElementById('tillNumber').value, 150, 700); // Till Number [cite: 60]
-            drawText(document.getElementById('dateInput').value, 150, 680); // Date [cite: 61]
+            // Map inputs to PDF coordinates
+            drawText(document.getElementById('aggregatorName').value, 150, 720); 
+            drawText(document.getElementById('tillNumber').value, 150, 700); 
+            drawText(document.getElementById('dateInput').value, 150, 680); 
             
-            drawText(document.getElementById('businessName').value, 200, 620); // Business Name [cite: 63]
-            drawText(document.getElementById('businessType').value, 200, 600); // Business Type [cite: 64]
-            drawText(document.getElementById('tinNumber').value, 400, 600); // TIN
-            drawText(document.getElementById('ownerName').value, 200, 580); // Owner Name [cite: 65]
-            drawText(document.getElementById('ownerPhone').value, 200, 560); // Phone [cite: 66]
-            drawText(document.getElementById('otherPhone').value, 400, 560); // Other Phone [cite: 67]
+            drawText(document.getElementById('businessName').value, 200, 620); 
+            drawText(document.getElementById('businessType').value, 200, 600); 
+            drawText(document.getElementById('tinNumber').value, 400, 600); 
+            drawText(document.getElementById('ownerName').value, 200, 580); 
+            drawText(document.getElementById('ownerPhone').value, 200, 560); 
+            drawText(document.getElementById('otherPhone').value, 400, 560); 
             
-            drawText(document.getElementById('ward').value, 150, 500); // Ward [cite: 68]
-            drawText(document.getElementById('district').value, 300, 500); // District [cite: 74]
-            drawText(document.getElementById('region').value, 450, 500); // Region [cite: 69]
+            drawText(document.getElementById('ward').value, 150, 500); 
+            drawText(document.getElementById('district').value, 300, 500); 
+            drawText(document.getElementById('region').value, 450, 500); 
 
-            drawText(document.getElementById('halopesaAccount').value, 250, 420); // Account Name [cite: 77]
-            drawText(document.getElementById('halopesaPhone').value, 250, 400); // Phone [cite: 78]
+            drawText(document.getElementById('halopesaAccount').value, 250, 420); 
+            drawText(document.getElementById('halopesaPhone').value, 250, 400); 
 
-            drawText(document.getElementById('ownerName').value, 150, 150); // Signature Name [cite: 93]
-            drawText(document.getElementById('dateInput').value, 150, 110); // Signature Date [cite: 95]
+            drawText(document.getElementById('ownerName').value, 150, 150); 
+            drawText(document.getElementById('dateInput').value, 150, 110); 
 
-            // 4. Embed Signature
+            // Embed Signature
             if (!signaturePad.isEmpty()) {
                 const sigDataUri = signaturePad.toDataURL('image/png');
                 const sigBytes = await fetch(sigDataUri).then(res => res.arrayBuffer());
                 const sigImage = await pdfDoc.embedPng(sigBytes);
                 
-                // Adjust X, Y, width, and height for the signature [cite: 94]
+                // Adjust X, Y, width, and height for the signature
                 firstPage.drawImage(sigImage, {
                     x: 150,
                     y: 120,
@@ -197,7 +189,7 @@
                 });
             }
 
-            // 5. Save and Download
+            // Save and Download
             const pdfBytes = await pdfDoc.save();
             const blob = new Blob([pdfBytes], { type: "application/pdf" });
             const link = document.createElement('a');
